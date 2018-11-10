@@ -5,15 +5,12 @@ from passlib.hash import sha256_crypt
 from functools import wraps
 import pymysql
 import pymysql.cursors
+from datetime import datetime 
+
 app = Flask(__name__)
 
 # Config pyMySQL
-db = pymysql.connect(host='localhost',
-                    user='root',
-                    password='',
-                    db='newtry',
-                    charset='utf8mb4',
-                    cursorclass=pymysql.cursors.DictCursor)
+db = pymysql.connect(host='localhost',user='root', password='',db='newtry',charset='utf8mb4',cursorclass=pymysql.cursors.DictCursor)
 
 # Index
 @app.route('/')
@@ -30,11 +27,15 @@ def about():
 def about1():
     return render_template('dashboard.html')
 
+
+
+
 # Register Form Class
 class RegisterForm(Form):
     name = StringField('Name', [validators.Length(min=1, max=50)])
     username = StringField('Username', [validators.Length(min=4, max=25)])
     email = StringField('Email', [validators.Length(min=6, max=50)])
+    phone = StringField('Phone', [validators.Length(min=10 , max=12)])
     password = PasswordField('Password', [
         validators.DataRequired(),
         validators.EqualTo('confirm', message='Passwords do not match')
@@ -50,25 +51,42 @@ def register():
         name = form.name.data
         email = form.email.data
         username = form.username.data
+        phone = form.phone.data
         password = sha256_crypt.encrypt(form.password.data)
 
         # Create cursor
         cursor=db.cursor()
+        cursor.execute("SELECT * FROM users WHERE username = %s", username)
+        row=cursor.fetchone()
+        if row:
+            return redirect(url_for('register'))
 
-        # Execute query
-        cursor.execute("INSERT INTO users(name, email, username, password) VALUES(%s, %s, %s, %s)", (name, email, username, password))
+        else:
 
-        # Commit to DB
-        cursor.connection.commit()
+            # Execute query
+            cursor.execute("INSERT INTO users(name, email, username, phone, password) VALUES(%s, %s, %s, %s, %s)", (name, email, username, phone, password))
 
-        # Close connection
-        cursor.close()
+            # Commit to DB
+            cursor.connection.commit()
 
-        flash('You are now registered and can log in', 'success')
+            # Close connection
+            cursor.close()
 
-        return redirect(url_for('login'))
+            flash('You are now registered and can log in', 'success')
+
+            return redirect(url_for('login'))
     return render_template('register.html', form=form)
 
+@app.route('/profile', methods=['GET' , 'POST'])
+def profile():
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM cresha WHERE username = %s", session['username'])
+    data = cursor.fetchall()
+    cursor.connection.commit()
+    return render_template('profile.html' , data=data)
+
+
+        
 
 # User login
 @app.route('/login', methods=['GET', 'POST'])
@@ -94,9 +112,11 @@ def login():
                 # Passed
                 session['logged_in'] = True
                 session['username'] = request.form['username']
+                session['email'] = data['email'] 
+                session['phone'] = data['phone']
 
                 flash('You are now logged in', 'success')
-                return redirect(url_for('about'))
+                return redirect(url_for('profile'))
             else:
                 error = 'Invalid login'
                 return render_template('login.html', error=error)
@@ -109,6 +129,7 @@ def login():
     return render_template('login.html')
 
 # Check if user logged in
+
 def is_logged_in(f):
     @wraps(f)
     def wrap(*args, **kwargs):
@@ -118,6 +139,39 @@ def is_logged_in(f):
             flash('Unauthorized, Please login', 'danger')
             return redirect(url_for('login'))
     return wrap
+
+@app.route('/cabshare', methods=['GET' , 'POST'])
+def search():
+    cursor=db.cursor()
+    if request.method == 'POST':    
+        journeydate = request.form['date']
+        time = request.form['time']
+        leavingfrom = request.form['leavingfrom']
+        goingto = request.form['goingto']
+        emptyseats = request.form['numberofseats']
+        cursor.execute('INSERT INTO cresha(journeydate, time, leavingfrom, goingto, emptyseats, username, phone) VALUES (%s, %s, %s, %s, %s, %s ,%s)', (journeydate, time, leavingfrom, goingto, emptyseats, session['username'], session['phone']))
+        cursor.connection.commit()	
+        cursor.close()
+    return render_template('dashboard.html')
+
+@app.route('/cabsearch' , methods=['GET' , 'POST'])
+def search2():
+    cursor=db.cursor()
+    if request.method == 'POST':
+        journeydate1 = request.form['date']
+        leavingfrom1 = request.form['leavingfrom']
+        goingto1 = request.form['goingto']
+
+        result = cursor.execute("SELECT * FROM cresha WHERE leavingfrom = %s", leavingfrom1) 
+        data = cursor.fetchall()
+        cursor.connection.commit()
+        return render_template('profile1.html' , data=data)
+    return render_template('cabsearchs.html')
+        
+     
+
+
+
 
 # Logout
 @app.route('/logout')

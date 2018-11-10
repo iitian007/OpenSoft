@@ -1,0 +1,27 @@
+{% extends 'layout.html' %}
+
+
+{% block body %}
+<style>
+        table, th, td {
+       border: 1px solid black;
+       border-collapse: collapse;
+        }
+</style>
+  <h1> <small> Username : {{session.username}}</small></h1>
+  <h1> <small> Email :{{session.email}}</small></h1>
+  <h1> <small> Phone :{{session.phone}}</small></h1>
+  <h1>Details :</h1>
+  <body> </body>
+  
+
+    {%for item in data%}
+
+       <tr>
+         <li><h2>Date: {{item.journeydate}}</h2> <h2>Time: {{item.time}}</h2> <h2>LeavingFrom:  {{item.leavingfrom}}</h2>  <h2>GoingTo:  {{item.goingto}}</h2> <h2>No of Seats: {{item.emptyseats}}</h2> <h2>Phone:  {{item.phone}}</h2></li>
+       </tr>
+    {% endfor %}
+
+ 
+
+{% endblock %}

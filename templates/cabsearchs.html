@@ -5,19 +5,11 @@
   <body>
     
     <h1 class="heading">create a cab share</h1>
-    <form class="cabsearch" method="POST" action="/cabshare">
+    <form class="cabsearch" method="POST" action="/cabsearch">
       <table>
         <tr>
           <td><span class="labels">Journey Date:   </span></td>
           <td><input class="form-group" type="date" name="date" placeholder="Enter the journey date" pattern="(?:19|20)[0-9]{2}-(?:(?:0[1-9]|1[0-2])-(?:0[1-9]|1[0-9]|2[0-9])|(?:(?!02)(?:0[1-9]|1[0-2])-(?:30))|(?:(?:0[13578]|1[02])-31))" required ></td>
-        </tr>
-        <tr>
-          <td><span class="labels">Journey Time: </span></td>
-          <td><input class="form-group" type="time" name="time" placeholder="Enter the tentative time of journey" required></td>
-        </tr>
-        <tr>
-          <td><span class="labels">No. of seats: </span></td>
-          <td><input class="form-group" type="text" name="numberofseats" placeholder="Number of empty seats" required></td>
         </tr>
         <tr>
           <td><span class="labels">From:</span></td>
