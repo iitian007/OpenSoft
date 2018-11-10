@@ -162,7 +162,7 @@ def search2():
         leavingfrom1 = request.form['leavingfrom']
         goingto1 = request.form['goingto']
 
-        result = cursor.execute("SELECT * FROM cresha WHERE leavingfrom = %s", leavingfrom1) 
+        result = cursor.execute("SELECT * FROM cresha WHERE (leavingfrom,goingto) = (%s,%s)", (leavingfrom1,goingto1))
         data = cursor.fetchall()
         cursor.connection.commit()
         return render_template('profile1.html' , data=data)
